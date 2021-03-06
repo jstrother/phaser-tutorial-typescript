@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import RocketMouse from '../game/RocketMouse';
 import AnimationKeys from '../consts/AnimationKeys';
 import SceneKeys from '../consts/SceneKeys';
 import TextureKeys from '../consts/TextureKeys';
@@ -137,20 +138,19 @@ export default class Game extends Phaser.Scene {
 
     this.bookcase2 = this.add.image(
       Phaser.Math.Between(2900, 3400),
-      285,
+      286,
       TextureKeys.Bookcase2
     );
 
     this.bookcases = [this.bookcase1, this.bookcase2];
     
-    const mouse = this.physics.add.sprite(
+    const mouse = new RocketMouse(
+      this,
       width * 0.5,
-      groundLevel,
-      TextureKeys.RocketMouse,
-      'rocketmouse_fly01.png'
-    )
-      .setOrigin(0.5, 1)
-      .play(AnimationKeys.RocketMouseRun);
+      height - 30
+    );
+
+    this.add.existing(mouse)
 
     const body = mouse.body as Phaser.Physics.Arcade.Body;
     body.setCollideWorldBounds(true);
