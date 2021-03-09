@@ -9,13 +9,27 @@ export default class Game extends Phaser.Scene {
   private background!: Phaser.GameObjects.TileSprite;
   private bookcase1!: Phaser.GameObjects.Image;
   private bookcase2!: Phaser.GameObjects.Image;
+  private coins!: Phaser.Physics.Arcade.StaticGroup;
   private laserObstacle!: LaserObstacle;
   private mouseHole!: Phaser.GameObjects.Image;
+  private scoreLabel!: Phaser.GameObjects.Text;
   private window1!: Phaser.GameObjects.Image;
   private window2!: Phaser.GameObjects.Image;
 
+  private score = 0;
   private bookcases: Phaser.GameObjects.Image[] = [];
   private windows: Phaser.GameObjects.Image[] = [];
+
+  private handleCoinCollection(
+    obj1: Phaser.GameObjects.GameObject,
+    obj2: Phaser.GameObjects.GameObject
+  ) {
+    const coin = obj2 as Phaser.Physics.Arcade.Sprite;
+    this.coins.killAndHide(coin);
+    coin.body.enable = false;
+    this.score += 1;
+    this.scoreLabel.text = `Score: ${this.score}`;
+  }
 
   private handleOverlapLaser(
     obj1: Phaser.GameObjects.GameObject,
@@ -23,6 +37,38 @@ export default class Game extends Phaser.Scene {
   ) {
     const mouse = obj2 as RocketMouse;
     mouse.kill();
+  }
+
+  private spawnCoins() {
+    this.coins.children.each((child) => {
+      const coin = child as Phaser.Physics.Arcade.Sprite;
+      this.coins.killAndHide(coin);
+      coin.body.enable = false;
+    });
+
+    const scrollX = this.cameras.main.scrollX;
+    const rightEdge = scrollX + this.scale.width;
+
+    let x = rightEdge + 100;
+
+    const numCoins = Phaser.Math.Between(1, 20);
+
+    for (let i = 0; i < numCoins; ++i) {
+      const coin = this.coins.get(
+        x,
+        Phaser.Math.Between(100, this.scale.height - 100),
+        TextureKeys.Coin
+      ) as Phaser.Physics.Arcade.Sprite;
+
+      coin.setVisible(true);
+      coin.setActive(true);
+
+      const body = coin.body as Phaser.Physics.Arcade.StaticBody;
+      body.setCircle(body.width * 0.5);
+      body.enable = true;
+
+      x += coin.width * 1.5;
+    }
   }
 
   private wrapBookcases() {
@@ -124,6 +170,10 @@ export default class Game extends Phaser.Scene {
     }
   }
 
+  init() {
+    this.score = 0;
+  }
+
   constructor() {
     super(SceneKeys.Game);
   }
@@ -178,6 +228,9 @@ export default class Game extends Phaser.Scene {
     );
 
     this.add.existing(this.laserObstacle);
+
+    this.coins = this.physics.add.staticGroup();
+    this.spawnCoins();
     
     const mouse = new RocketMouse(
       this,
@@ -192,7 +245,7 @@ export default class Game extends Phaser.Scene {
     body.setVelocityX(200);
 
     this.physics.world.setBounds(
-      0, 0, Number.MAX_SAFE_INTEGER, groundLevel
+      0, 0, Number.MAX_SAFE_INTEGER, groundLevel - 55
     );
 
     this.cameras.main.startFollow(mouse);
@@ -205,6 +258,32 @@ export default class Game extends Phaser.Scene {
       undefined,
       this
     );
+
+    this.physics.add.overlap(
+      this.coins,
+      mouse,
+      this.handleCoinCollection,
+      undefined,
+      this
+    );
+
+    this.scoreLabel = this.add.text(10,10, `Score: ${this.score}`, {
+      fontSize: '24px',
+      color: '#080808',
+      backgroundColor: '#F8E71C',
+      shadow: {
+        fill: true,
+        blur: 0,
+        offsetY: 0
+      },
+      padding: {
+        left: 15,
+        right: 15,
+        top: 10,
+        bottom: 10
+      }
+    })
+      .setScrollFactor(0);
   }
 
   update(t: number, dt: number) {

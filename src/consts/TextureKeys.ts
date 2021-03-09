@@ -2,6 +2,7 @@ enum TextureKeys {
   Background = 'background',
   Bookcase1 = 'bookcase1',
   Bookcase2 = 'bookcase2',
+  Coin = 'coin',
   LaserEnd = 'laser-end',
   LaserMiddle = 'laser-middle',
   MouseHole = 'mouse-hole',

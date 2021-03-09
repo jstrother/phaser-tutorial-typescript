@@ -54,6 +54,11 @@ export default class  Preloader extends Phaser.Scene {
       TextureKeys.LaserMiddle,
       'house/object_laser.png'
     );
+
+    this.load.image(
+      TextureKeys.Coin,
+      'house/object_coin.png'
+    );
   }
 
   create() {
